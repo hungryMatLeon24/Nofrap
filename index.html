@@ -900,3 +900,117 @@
                 milestoneIcon.classList.remove('milestone-reached');
             }
         }
+// Journal Modal functions
+function openJournalModal() {
+    document.getElementById('journalModal').style.display = 'flex';
+}
+
+function closeJournalModal() {
+    document.getElementById('journalModal').style.display = 'none';
+}
+
+// Add a journal entry
+function addJournalEntry() {
+    const journalText = document.getElementById('journalText').value.trim();
+    
+    if (journalText) {
+        const entry = {
+            date: new Date().toISOString(),
+            text: journalText,
+            day: streak
+        };
+        
+        journalEntries.unshift(entry); // Add to beginning of array
+        
+        // Keep only the last 10 entries
+        if (journalEntries.length > 10) {
+            journalEntries = journalEntries.slice(0, 10);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('journalEntries', JSON.stringify(journalEntries));
+        
+        // Clear form and close modal
+        document.getElementById('journalText').value = '';
+        closeJournalModal();
+        
+        // Update entries display
+        displayJournalEntries();
+    }
+}
+
+// Display journal entries
+function displayJournalEntries() {
+    const entriesContainer = document.getElementById('journalEntries');
+    entriesContainer.innerHTML = '';
+    
+    if (journalEntries.length === 0) {
+        entriesContainer.innerHTML = '<p>No journal entries yet. Click the Journal button to add one.</p>';
+        return;
+    }
+    
+    journalEntries.forEach(entry => {
+        const entryElement = document.createElement('div');
+        entryElement.className = 'journal-entry';
+        
+        const date = new Date(entry.date);
+        const formattedDate = date.toLocaleDateString() + ' - Day ' + entry.day;
+        
+        entryElement.innerHTML = `
+            <div class="date">${formattedDate}</div>
+            <div>${entry.text}</div>
+        `;
+        
+        entriesContainer.appendChild(entryElement);
+    });
+}
+
+// Motivation quotes
+const quotes = [
+    {
+        text: "Every time you resist temptation you become stronger, not weaker.",
+        author: "Sheikh Hamza Yusuf"
+    },
+    {
+        text: "The strongest among you is the one who controls his anger.",
+        author: "Prophet Muhammad ﷺ"
+    },
+    {
+        text: "Lower your gaze, for it sows the seeds of desire in the heart.",
+        author: "Islamic Wisdom"
+    },
+    {
+        text: "Your task is not to seek for love, but merely to seek and find all the barriers within yourself that you have built against it.",
+        author: "Rumi"
+    },
+    {
+        text: "The reward of patience is patience.",
+        author: "Ibn Qayyim Al-Jawziyya"
+    },
+    {
+        text: "He who knows his soul knows his Lord.",
+        author: "Islamic Proverb"
+    },
+    {
+        text: "Do not lose heart, nor be sad, and you will ultimately prevail if you are true believers.",
+        author: "Quran 3:139"
+    },
+    {
+        text: "Indeed, with hardship comes ease.",
+        author: "Quran 94:5-6"
+    }
+];
+
+// Set a random motivation quote
+function setRandomQuote() {
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    const quote = quotes[randomIndex];
+    
+    document.getElementById('motivationQuote').textContent = quote.text;
+    document.getElementById('quoteAuthor').textContent = `— ${quote.author}`;
+}
+
+// Change quote when clicking on it
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.quote-container').addEventListener('click', setRandomQuote);
+});
