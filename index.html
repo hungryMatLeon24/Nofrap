@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoFap Journey Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --success: #43a047;
+            --danger: #e53935;
+            --warning: #ffb300;
+            --light: #f5f5f5;
+            --dark: #212121;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #bbdefb);
+            min-height: 100vh;
+            padding: 2rem;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #555;
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .streak-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to right, #e3f2fd, #f5f5f5);
+        }
+        
+        .streak-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .streak-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(30, 136, 229, 0.25);
+            margin-bottom: 1.5rem;
+            position: relative;
+            border: 8px solid var(--primary);
+        }
+        
+        .milestone-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--warning);
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .milestone-reached {
+            opacity: 1;
+        }
+        
+        .days-count {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1;
+        }
+        
+        .days-label {
+            font-size: 1.2rem;
+            color: #555;
+        }
+        
+        .longest-streak {
+            background-color: rgba(30, 136, 229, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1.5rem;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+        
+        .btn i {
+            margin-right: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(21, 101, 192, 0.3);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c62828;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(198, 40, 40, 0.3);
+        }
+        
+        .btn-journal {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-journal:hover {
+            background-color: #ff8f00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 143, 0, 0.3);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: #757575;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+        }
+        
+        .tab-content {
+            padding: 1.5rem;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .tips-list {
+            list-style: none;
+        }
+        
+        .tip-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tip-item i {
+            margin-right: 1rem;
+            color: var(--primary);
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .benefit-card {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .benefit-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .benefit-card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-container {
+            margin-top: 2rem;
+        }
+        
+        .milestone {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .milestone-days {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .milestone-complete {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .milestone-bar {
+            flex-grow: 1;
+            height: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .milestone-progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0;
+            transition: width 0.5s ease-out;
+        }
+        
+        .milestone-text {
+            margin-left: 1rem;
+            font-weight: 600;
+            min-width: 120px;
+        }
+        
+        .journal-container {
+            margin-top: 1rem;
+        }
+        
+        .journal-entry {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .journal-entry .date {
+            font-size: 0.9rem;
+            color: #757575;
+            margin-bottom: 0.5rem;
+        }
+        
+        .journal-form {
+            margin-bottom: 1rem;
+        }
+        
+        .journal-form textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 1rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            color: #757575;
+            cursor: pointer;
+        }
+        
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            padding: 1rem;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #757575;
+        }
+        
+        /* Motivation Quote */
+        .quote-container {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .quote-container::before {
+            content: '"';
+            font-size: 4rem;
+            color: rgba(30, 136, 229, 0.1);
+            position: absolute;
+            top: 0;
+            left: 1rem;
+            line-height: 1;
+        }
+        
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quote-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .streak-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .days-count {
+                font-size: 2.5rem;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Confetti Animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f0f;
+            animation: fall linear;
+            opacity: 0;
+        }
+        
+        @keyframes fall {
+            0% {
+                top: -10px;
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-fire"></i> NoFap Journey</h1>
+            <p>Stay strong, build discipline, transform your life</p>
+        </div>
+        
+        <div class="card">
+            <div class="streak-container">
+                <div class="streak-info">
+                    <div class="streak-circle">
+                        <div class="milestone-indicator" id="milestoneIcon"><i class="fas fa-trophy"></i></div>
+                        <div class="days-count" id="streakCount">0</div>
+                        <div class="days-label">DAYS</div>
+                    </div>
+                    <div class="longest-streak" id="longestStreak">Longest streak: 0 days</div>
+                </div>
+                
+                <div class="btn-container">
+                    <button class="btn btn-primary" onclick="incrementStreak()">
+                        <i class="fas fa-plus"></i> Add Day
+                    </button>
+                    <button class="btn btn-danger" onclick="resetStreak()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button class="btn btn-journal" onclick="openJournalModal()">
+                        <i class="fas fa-book"></i> Journal
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="tips">Tips & Advice</div>
+                <div class="tab" data-tab="benefits">Benefits</div>
+                <div class="tab" data-tab="progress">Progress</div>
+                <div class="tab" data-tab="stats">Stats</div>
+            </div>
+            
+            <div class="tab-content active" id="tips">
+                <ul class="tips-list">
+                    <li class="tip-item">
+                        <i class="fas fa-pray"></i>
+                        <div>
+                            <strong>Spiritual Connection:</strong> Pray and make du'a when you feel weak. Strengthen your connection with Allah.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-shower"></i>
+                        <div>
+                            <strong>Cold Shower:</strong> Take a cold shower immediately when urges arise to reset your mind and body.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-running"></i>
+                        <div>
+                            <strong>Physical Activity:</strong> Go outside and walk or engage in sports to redirect energy constructively.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-book"></i>
+                        <div>
+                            <strong>Positive Substitution:</strong> Replace trigger moments with reading Qur'an or beneficial books.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div>
+                            <strong>Device Control:</strong> Install website blockers and keep devices out of private spaces.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <strong>Accountability:</strong> Find a trustworthy accountability partner who can support your journey.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-bed"></i>
+                        <div>
+                            <strong>Sleep Hygiene:</strong> Maintain a consistent sleep schedule and avoid using devices before bedtime.
+                        </div>
+                    </li>
+                    <li class="tip-item">
+                        <i class="fas fa-brain"></i>
+                        <div>
+                            <strong>Understand Triggers:</strong> Identify and avoid emotional, physical, and environmental triggers.
+                        </div>
+                    </li>
+                </ul>
+                
+                <div class="quote-container">
+                    <p class="quote-text" id="motivationQuote">Every time you resist temptation you become stronger, not weaker.</p>
+                    <p class="quote-author" id="quoteAuthor">— Sheikh Hamza Yusuf</p>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="benefits">
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <i class="fas fa-brain"></i>
+                        <h4>Mental Clarity</h4>
+                        <p>Improved focus and reduced brain fog</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-bolt"></i>
+                        <h4>More Energy</h4>
+                        <p>Increased vitality and physical stamina</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-heart"></i>
+                        <h4>Better Relationships</h4>
+                        <p>Healthier view of others and deeper connections</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-dumbbell"></i>
+                        <h4>Self-Discipline</h4>
+                        <p>Greater willpower that extends to other areas</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-smile"></i>
+                        <h4>Self-Confidence</h4>
+                        <p>More pride and trust in yourself</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-pray"></i>
+                        <h4>Spiritual Growth</h4>
+                        <p>Stronger connection with your faith</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-eye"></i>
+                        <h4>Clearer Vision</h4>
+                        <p>See the world and people more purely</p>
+                    </div>
+                    <div class="benefit-card">
+                        <i class="fas fa-moon"></i>
+                        <h4>Better Sleep</h4>
+                        <p>Improved sleep quality and patterns</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="progress">
+                <div class="progress-container">
+                    <div class="milestone">
+                        <div class="milestone-days" id="milestone1">1</div>
+                        <div class="milestone-bar">
+                            <div class="milestone-progress" id="progress1"></div>
+                        </div>
+                        <div class="milestone-text">First step</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-days" id="milestone7">7</div>
+                        <div class="milestone-bar">
+                            <div class="milestone-progress" id="progress7"></div>
+                        </div>
+                        <div class="milestone-text">One week</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-days" id="milestone30">30</div>
+                        <div class="milestone-bar">
+                            <div class="milestone-progress" id="progress30"></div>
+                        </div>
+                        <div class="milestone-text">One month</div>
+                    </div>
+                    <div class="milestone">
+                        <div class="milestone-days" id="milestone90">90</div>
+                        <div class="milestone-bar">
+                            <div class="milestone-progress" id="progress90"></div>
+                        </div>
+                        <div class="milestone-text">Full reboot</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="stats">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalDays">0</div>
+                        <div class="stat-label">Total Days on Journey</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalResets">0</div>
+                        <div class="stat-label">Times Reset</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="averageStreak">0</div>
+                        <div class="stat-label">Average Streak (Days)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                
+                <div class="journal-container">
+                    <h4>Recent Journal Entries</h4>
+                    <div id="journalEntries"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Journal Modal -->
+    <div class="modal" id="journalModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeJournalModal()">&times;</span>
+            <h3>Journal Entry</h3>
+            <form id="journalForm" class="journal-form">
+                <textarea id="journalText" rows="5" placeholder="Write about your challenges, victories, or reflections today..."></textarea>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Entry
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize data from localStorage
+        let streak = parseInt(localStorage.getItem('nofapStreak')) || 0;
+        let longestStreak = parseInt(localStorage.getItem('longestStreak')) || 0;
+        let startDate = localStorage.getItem('startDate') || new Date().toISOString();
+        let totalDays = parseInt(localStorage.getItem('totalDays')) || 0;
+        let totalResets = parseInt(localStorage.getItem('totalResets')) || 0;
+        let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+        
+        // Update UI on load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUI();
+            
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // Journal form submission
+            document.getElementById('journalForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addJournalEntry();
+            });
+            
+            // Set random motivation quote
+            setRandomQuote();
+        });
+        
+        // Increment streak
+        function incrementStreak() {
+            streak++;
+            totalDays++;
+            
+            // Update longest streak if needed
+            if (streak > longestStreak) {
+                longestStreak = streak;
+                localStorage.setItem('longestStreak', longestStreak);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('nofapStreak', streak);
+            localStorage.setItem('totalDays', totalDays);
+            
+            // Check for milestone
+            if (isMilestone(streak)) {
+                showMilestoneAchieved();
+            }
+            
+            updateUI();
+        }
+        
+        // Reset streak
+        function resetStreak() {
+            if (confirm('Are you sure you want to reset your streak? Your progress will still be saved in your statistics.')) {
+                // Record the reset in statistics
+                totalResets++;
+                localStorage.setItem('totalResets', totalResets);
+                
+                // Reset current streak
+                streak = 0;
+                localStorage.setItem('nofapStreak', streak);
+                
+                updateUI();
+                
+                // Prompt for a journal entry after reset
+                openJournalModal();
+            }
+        }
+        
+        // Update all UI elements
+        function updateUI() {
+            // Update streak count
+            document.getElementById('streakCount').textContent = streak;
+            
+            // Update longest streak
+            document.getElementById('longestStreak').textContent = `Longest streak: ${longestStreak} days`;
+            
+            // Update milestones
+            updateMilestones();
+            
+            // Update statistics
+            document.getElementById('totalDays').textContent = totalDays;
+            document.getElementById('totalResets').textContent = totalResets;
+            
+            // Calculate average streak
+            const averageStreak = totalResets > 0 ? Math.round((totalDays / (totalResets + 1)) * 10) / 10 : totalDays;
+            document.getElementById('averageStreak').textContent = averageStreak;
+            
+            // Calculate success rate
+            const successRate = totalDays > 0 ? Math.round((longestStreak / totalDays) * 100) : 0;
+            document.getElementById('successRate').textContent = `${successRate}%`;
+            
+            // Update journal entries
+            displayJournalEntries();
+            
+            // Check for milestone indication
+            toggleMilestoneIndicator();
+        }
+        
+        // Update milestone progress
+        function updateMilestones() {
+            // Update milestone for day 1
+            if (streak >= 1) {
+                document.getElementById('milestone1').classList.add('milestone-complete');
+                document.getElementById('progress1').style.width = '100%';
+            } else {
+                document.getElementById('milestone1').classList.remove('milestone-complete');
+                document.getElementById('progress1').style.width = `${streak * 100}%`;
+            }
+            
+            // Update milestone for day 7
+            if (streak >= 7) {
+                document.getElementById('milestone7').classList.add('milestone-complete');
+                document.getElementById('progress7').style.width = '100%';
+            } else {
+                document.getElementById('milestone7').classList.remove('milestone-complete');
+                document.getElementById('progress7').style.width = `${(streak / 7) * 100}%`;
+            }
+            
+            // Update milestone for day 30
+            if (streak >= 30) {
+                document.getElementById('milestone30').classList.add('milestone-complete');
+                document.getElementById('progress30').style.width = '100%';
+            } else {
+                document.getElementById('milestone30').classList.remove('milestone-complete');
+                document.getElementById('progress30').style.width = `${(streak / 30) * 100}%`;
+            }
+            
+            // Update milestone for day 90
+            if (streak >= 90) {
+                document.getElementById('milestone90').classList.add('milestone-complete');
+                document.getElementById('progress90').style.width = '100%';
+            } else {
+                document.getElementById('milestone90').classList.remove('milestone-complete');
+                document.getElementById('progress90').style.width = `${(streak / 90) * 100}%`;
+            }
+        }
+        
+        // Check if the current streak is a milestone
+        function isMilestone(days) {
+            const milestones = [1, 3, 7, 14, 21, 30, 60, 90, 100, 180, 365];
+            return milestones.includes(days);
+        }
+        
+        // Show milestone achievement animation
+        function showMilestoneAchieved() {
+            // Create confetti
+            for (let i = 0; i < 100; i++) {
+                createConfetti();
+            }
+            
+            // Show milestone indicator
+            toggleMilestoneIndicator();
+        }
+        
+        // Create a single confetti element
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // Random position, color, and animation duration
+            const left = Math.random() * 100;
+            const color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+            const animationDuration = 1 + Math.random() * 2;
+            
+            confetti.style.left = `${left}%`;
+            confetti.style.backgroundColor = color;
+            confetti.style.animationDuration = `${animationDuration}s`;
+            
+            document.querySelector('.streak-container').appendChild(confetti);
+            
+            // Remove confetti after animation completes
+            setTimeout(() => {
+                confetti.remove();
+            }, animationDuration * 1000);
+        }
+        
+        // Toggle milestone indicator
+        function toggleMilestoneIndicator() {
+            const milestoneIcon = document.getElementById('milestoneIcon');
+            if (isMilestone(streak)) {
+                milestoneIcon.classList.add('milestone-reached');
+            } else {
+                milestoneIcon.classList.remove('milestone-reached');
+            }
+        }
